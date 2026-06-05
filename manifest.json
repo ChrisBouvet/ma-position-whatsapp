@@ -6,4 +6,10 @@ const firebaseConfig = {
   storageBucket: "positionvoiture.firebasestorage.app",
   messagingSenderId: "337751490430",
   appId: "1:337751490430:web:39046710776f6d1a64bd2f"
+  "icons": [
+    {
+      "src": "android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
 };
