@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envoyer ma position</title>
+    <title>Ma position</title>
     <style>
         body {
             display: flex;
@@ -14,76 +14,235 @@
             font-family: sans-serif;
             background: #f0f0f0;
         }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 32px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            max-width: 360px;
+            width: 100%;
+        }
         button {
-            padding: 16px 32px;
-            font-size: 18px;
-            background: #25D366;
-            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-weight: bold;
         }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        #btnSauvegarder { background: #4285F4; color: white; }
+        #btnConsulter { background: #34A853; color: white; }
+        #btnChangerNom { background: #f0f0f0; color: #555; font-size: 13px; padding: 8px; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #status { color: #888; font-size: 14px; text-align: center; }
+        #nomAffiche { font-size: 13px; color: #999; }
+        #resultat {
+            display: none;
+            background: #f8f8f8;
+            border-radius: 8px;
+            padding: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.8;
         }
-        #status {
-            margin-top: 16px;
-            text-align: center;
-            color: #555;
+        #resultat a { color: #4285F4; }
+
+        /* Overlay de saisie du nom */
+        #overlayNom {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        #overlayNom.cache { display: none; }
+        .carte-nom {
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .carte-nom input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .carte-nom button {
+            background: #4285F4;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div>
-        <button id="btn" onclick="envoyerPosition()">
-            📍 Envoyer ma position sur WhatsApp
-        </button>
-        <p id="status"></p>
+
+<!-- Overlay première utilisation -->
+<div id="overlayNom">
+    <div class="carte-nom">
+        <h3 style="margin:0">Bienvenue 👋</h3>
+        <p style="margin:0; font-size:14px; color:#666">Quel est votre prénom ? Il sera enregistré sur cet appareil.</p>
+        <input type="text" id="inputNom" placeholder="Votre prénom" maxlength="30" />
+        <button onclick="enregistrerNom()">Confirmer</button>
     </div>
+</div>
 
-    <script>
-        const PHONE_NUMBER = "33685967443"; // Format international sans +
+<div class="container">
+    <h2 style="margin:0">📍 Ma position</h2>
+    <span id="nomAffiche"></span>
 
-        function envoyerPosition() {
-            const btn = document.getElementById("btn");
-            const status = document.getElementById("status");
+    <button id="btnSauvegarder" onclick="sauvegarderPosition()">
+        Enregistrer ma position actuelle
+    </button>
 
-            if (!navigator.geolocation) {
-                status.textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
-                return;
-            }
+    <button id="btnConsulter" onclick="consulterPosition()">
+        Consulter la dernière position
+    </button>
 
-            btn.disabled = true;
-            status.textContent = "Récupération de la position...";
+    <button id="btnChangerNom" onclick="demanderNom()">
+        ✏️ Changer mon prénom
+    </button>
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    const message = `La voiture est positionnée : https://maps.google.com/?q=${lat},${lon}`;
-                    const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
-                    window.open(url, "_blank");
-                    status.textContent = "Position envoyée !";
-                    btn.disabled = false;
-                },
-                (erreur) => {
-                    switch (erreur.code) {
-                        case erreur.PERMISSION_DENIED:
-                            status.textContent = "Permission de localisation refusée.";
-                            break;
-                        case erreur.POSITION_UNAVAILABLE:
-                            status.textContent = "Position indisponible.";
-                            break;
-                        case erreur.TIMEOUT:
-                            status.textContent = "Délai dépassé, réessayez.";
-                            break;
-                    }
-                    btn.disabled = false;
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
+    <p id="status"></p>
+    <div id="resultat"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ⚠️ Remplace ces valeurs par celles de ton projet Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyA4CDOrkJbva99pu1rXYx6y_ccWfv3LJWE",
+  authDomain: "positionvoiture.firebaseapp.com",
+  databaseURL: "https://positionvoiture-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "positionvoiture",
+  storageBucket: "positionvoiture.firebasestorage.app",
+  messagingSenderId: "337751490430",
+  appId: "1:337751490430:web:39046710776f6d1a64bd2f"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // --- Gestion du nom ---
+
+    function getNom() {
+        return localStorage.getItem("monPrenom");
+    }
+
+    function afficherNom() {
+        const nom = getNom();
+        document.getElementById("nomAffiche").textContent = nom ? `Connecté en tant que : ${nom}` : "";
+    }
+
+    window.enregistrerNom = function() {
+        const input = document.getElementById("inputNom").value.trim();
+        if (!input) return;
+        localStorage.setItem("monPrenom", input);
+        document.getElementById("overlayNom").classList.add("cache");
+        afficherNom();
+    };
+
+    window.demanderNom = function() {
+        document.getElementById("inputNom").value = getNom() || "";
+        document.getElementById("overlayNom").classList.remove("cache");
+    };
+
+    // Afficher l'overlay si pas de nom enregistré
+    if (!getNom()) {
+        document.getElementById("overlayNom").classList.remove("cache");
+    } else {
+        document.getElementById("overlayNom").classList.add("cache");
+        afficherNom();
+    }
+
+    // Valider avec Entrée
+    document.getElementById("inputNom").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.enregistrerNom();
+    });
+
+    // --- Géolocalisation ---
+
+    window.sauvegarderPosition = function() {
+        const btn = document.getElementById("btnSauvegarder");
+        const status = document.getElementById("status");
+        const nom = getNom();
+
+        if (!nom) {
+            window.demanderNom();
+            return;
         }
-    </script>
+
+        if (!navigator.geolocation) {
+            status.textContent = "La géolocalisation n'est pas supportée.";
+            return;
+        }
+
+        btn.disabled = true;
+        status.textContent = "Récupération de la position...";
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const date = new Date().toLocaleString("fr-FR");
+
+                await set(ref(db, "position"), { lat, lon, date, nom });
+
+                status.textContent = "Position enregistrée et partagée.";
+                btn.disabled = false;
+            },
+            (erreur) => {
+                const messages = {
+                    1: "Permission de localisation refusée.",
+                    2: "Position indisponible.",
+                    3: "Délai dépassé, réessayez."
+                };
+                status.textContent = messages[erreur.code] || "Erreur inconnue.";
+                btn.disabled = false;
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+    };
+
+    window.consulterPosition = async function() {
+        const status = document.getElementById("status");
+        const resultat = document.getElementById("resultat");
+
+        status.textContent = "Chargement...";
+        const snapshot = await get(ref(db, "position"));
+
+        if (!snapshot.exists()) {
+            status.textContent = "Aucune position enregistrée pour l'instant.";
+            resultat.style.display = "none";
+            return;
+        }
+
+        const { lat, lon, date, nom } = snapshot.val();
+        const lienMaps = `https://maps.google.com/?q=${lat},${lon}`;
+
+        status.textContent = "";
+        resultat.style.display = "block";
+        resultat.innerHTML = `
+            <strong>Dernière position enregistrée</strong><br><br>
+            👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
+            📅 <strong>Date :</strong> ${date}<br>
+            🌐 <strong>Latitude :</strong> ${lat.toFixed(6)}<br>
+            🌐 <strong>Longitude :</strong> ${lon.toFixed(6)}<br><br>
+            <a href="${lienMaps}" target="_blank">📍 Voir sur Google Maps</a>
+        `;
+    };
+</script>
 </body>
 </html>
