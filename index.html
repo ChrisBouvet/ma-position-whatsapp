@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ma position</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4285F4">
     <style>
         body {
             display: flex;
@@ -18,42 +20,111 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            padding: 32px;
+            gap: 20px;
+            padding: 24px;
             background: white;
             border-radius: 12px;
             box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            max-width: 360px;
+            max-width: 380px;
             width: 100%;
         }
-        button {
+        h2 { margin: 0; }
+
+        /* Sélecteur de voiture */
+        .selecteur {
+            display: flex;
             width: 100%;
-            padding: 14px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+        .selecteur button {
+            flex: 1;
+            padding: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            background: #f0f0f0;
+            color: #888;
+            border-radius: 0;
+        }
+        .selecteur button.actif {
+            background: #4285F4;
+            color: white;
+        }
+
+        /* Carte voiture */
+        .carte-voiture {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        .carte-voiture.volkswagen { background: #e8f0fe; }
+        .carte-voiture.peugeot    { background: #fce8e8; }
+
+        .carte-voiture h3 {
+            margin: 0 0 4px 0;
             font-size: 16px;
+        }
+
+        button.btn-enregistrer {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            background: #4285F4;
+            color: white;
         }
-        #btnSauvegarder { background: #4285F4; color: white; }
-        #btnConsulter { background: #34A853; color: white; }
-        #btnChangerNom { background: #f0f0f0; color: #555; font-size: 13px; padding: 8px; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; }
-        #status { color: #888; font-size: 14px; text-align: center; }
-        #nomAffiche { font-size: 13px; color: #999; }
-        #resultat {
-            display: none;
-            background: #f8f8f8;
-            border-radius: 8px;
-            padding: 16px;
+        button.btn-consulter {
             width: 100%;
-            box-sizing: border-box;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #34A853;
+            color: white;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .status {
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+            min-height: 18px;
+        }
+        .resultat {
+            display: none;
+            background: white;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 13px;
             line-height: 1.8;
         }
-        #resultat a { color: #4285F4; }
+        .resultat a { color: #4285F4; }
 
-        /* Overlay de saisie du nom */
+        #btnChangerNom {
+            background: #f0f0f0;
+            color: #555;
+            font-size: 13px;
+            padding: 8px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #nomAffiche { font-size: 13px; color: #999; }
+
+        /* Overlay nom */
         #overlayNom {
             position: fixed;
             inset: 0;
@@ -80,16 +151,20 @@
             border-radius: 6px;
         }
         .carte-nom button {
+            padding: 12px;
             background: #4285F4;
             color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
         }
     </style>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#4285F4">
 </head>
 <body>
 
-<!-- Overlay première utilisation -->
+<!-- Overlay nom -->
 <div id="overlayNom">
     <div class="carte-nom">
         <h3 style="margin:0">Bienvenue 👋</h3>
@@ -100,23 +175,42 @@
 </div>
 
 <div class="container">
-    <h2 style="margin:0">📍 Ma position</h2>
+    <h2>🚗 Mes voitures</h2>
     <span id="nomAffiche"></span>
 
-    <button id="btnSauvegarder" onclick="sauvegarderPosition()">
-        Enregistrer ma position actuelle
-    </button>
+    <!-- Sélecteur -->
+    <div class="selecteur">
+        <button id="tabVolkswagen" onclick="afficherVoiture('volkswagen')">🚙 Volkswagen</button>
+        <button id="tabPeugeot" onclick="afficherVoiture('peugeot')">🚗 Peugeot</button>
+    </div>
 
-    <button id="btnConsulter" onclick="consulterPosition()">
-        Consulter la dernière position
-    </button>
+    <!-- Carte Volkswagen -->
+    <div id="carteVolkswagen" class="carte-voiture volkswagen">
+        <h3>🚙 Volkswagen</h3>
+        <button class="btn-enregistrer" id="btnEnrVW" onclick="sauvegarderPosition('volkswagen')">
+            Enregistrer ma position actuelle
+        </button>
+        <button class="btn-consulter" id="btnConsVW" onclick="consulterPosition('volkswagen')">
+            Consulter la dernière position
+        </button>
+        <div class="status" id="statusVW"></div>
+        <div class="resultat" id="resultatVW"></div>
+    </div>
 
-    <button id="btnChangerNom" onclick="demanderNom()">
-        ✏️ Changer mon prénom
-    </button>
+    <!-- Carte Peugeot -->
+    <div id="cartePeugeot" class="carte-voiture peugeot">
+        <h3>🚗 Peugeot</h3>
+        <button class="btn-enregistrer" id="btnEnrPG" onclick="sauvegarderPosition('peugeot')">
+            Enregistrer ma position actuelle
+        </button>
+        <button class="btn-consulter" id="btnConsPG" onclick="consulterPosition('peugeot')">
+            Consulter la dernière position
+        </button>
+        <div class="status" id="statusPG"></div>
+        <div class="resultat" id="resultatPG"></div>
+    </div>
 
-    <p id="status"></p>
-    <div id="resultat"></div>
+    <button id="btnChangerNom" onclick="demanderNom()">✏️ Changer mon prénom</button>
 </div>
 
 <script type="module">
@@ -124,24 +218,36 @@
     import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     // ⚠️ Remplace ces valeurs par celles de ton projet Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyA4CDOrkJbva99pu1rXYx6y_ccWfv3LJWE",
-  authDomain: "positionvoiture.firebaseapp.com",
-  databaseURL: "https://positionvoiture-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "positionvoiture",
-  storageBucket: "positionvoiture.firebasestorage.app",
-  messagingSenderId: "337751490430",
-  appId: "1:337751490430:web:39046710776f6d1a64bd2f"
-};
+    const firebaseConfig = {
+        apiKey: "REMPLACE_PAR_TA_CLE",
+        authDomain: "REMPLACE.firebaseapp.com",
+        databaseURL: "https://REMPLACE-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "REMPLACE",
+        storageBucket: "REMPLACE.appspot.com",
+        messagingSenderId: "REMPLACE",
+        appId: "REMPLACE"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- Gestion du nom ---
-
-    function getNom() {
-        return localStorage.getItem("monPrenom");
+    // --- Son de confirmation ---
+    function jouerSon() {
+        const contexte = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillateur = contexte.createOscillator();
+        const gain = contexte.createGain();
+        oscillateur.connect(gain);
+        gain.connect(contexte.destination);
+        oscillateur.type = "sine";
+        oscillateur.frequency.setValueAtTime(880, contexte.currentTime);
+        gain.gain.setValueAtTime(0.3, contexte.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, contexte.currentTime + 0.6);
+        oscillateur.start(contexte.currentTime);
+        oscillateur.stop(contexte.currentTime + 0.6);
     }
+
+    // --- Gestion du nom ---
+    function getNom() { return localStorage.getItem("monPrenom"); }
 
     function afficherNom() {
         const nom = getNom();
@@ -161,7 +267,10 @@ const firebaseConfig = {
         document.getElementById("overlayNom").classList.remove("cache");
     };
 
-    // Afficher l'overlay si pas de nom enregistré
+    document.getElementById("inputNom").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.enregistrerNom();
+    });
+
     if (!getNom()) {
         document.getElementById("overlayNom").classList.remove("cache");
     } else {
@@ -169,45 +278,42 @@ const firebaseConfig = {
         afficherNom();
     }
 
-    // Valider avec Entrée
-    document.getElementById("inputNom").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") window.enregistrerNom();
-    });
+    // --- Sélecteur de voiture ---
+    // Afficher par défaut la Volkswagen
+    window.afficherVoiture = function(voiture) {
+        document.getElementById("carteVolkswagen").style.display = voiture === "volkswagen" ? "flex" : "none";
+        document.getElementById("cartePeugeot").style.display    = voiture === "peugeot"    ? "flex" : "none";
+        document.getElementById("tabVolkswagen").classList.toggle("actif", voiture === "volkswagen");
+        document.getElementById("tabPeugeot").classList.toggle("actif",    voiture === "peugeot");
+    };
+
+    afficherVoiture("volkswagen"); // voiture par défaut
 
     // --- Géolocalisation ---
-function jouerSon() {
-    const contexte = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillateur = contexte.createOscillator();
-    const gain = contexte.createGain();
+    const ids = {
+        volkswagen: { enr: "btnEnrVW",  status: "statusVW", resultat: "resultatVW" },
+        peugeot:    { enr: "btnEnrPG",  status: "statusPG", resultat: "resultatPG" }
+    };
 
-    oscillateur.connect(gain);
-    gain.connect(contexte.destination);
+    const labels = {
+        volkswagen: "Volkswagen",
+        peugeot:    "Peugeot"
+    };
 
-    oscillateur.type = "sine";
-    oscillateur.frequency.setValueAtTime(880, contexte.currentTime);
-    gain.gain.setValueAtTime(0.3, contexte.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, contexte.currentTime + 0.6);
-
-    oscillateur.start(contexte.currentTime);
-    oscillateur.stop(contexte.currentTime + 0.6);
-}
-    window.sauvegarderPosition = function() {
-        const btn = document.getElementById("btnSauvegarder");
-        const status = document.getElementById("status");
+    window.sauvegarderPosition = function(voiture) {
+        const { enr, status } = ids[voiture];
+        const btn = document.getElementById(enr);
+        const statusEl = document.getElementById(status);
         const nom = getNom();
 
-        if (!nom) {
-            window.demanderNom();
-            return;
-        }
-
+        if (!nom) { window.demanderNom(); return; }
         if (!navigator.geolocation) {
-            status.textContent = "La géolocalisation n'est pas supportée.";
+            statusEl.textContent = "La géolocalisation n'est pas supportée.";
             return;
         }
 
         btn.disabled = true;
-        status.textContent = "Récupération de la position...";
+        statusEl.textContent = "Récupération de la position...";
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
@@ -215,10 +321,9 @@ function jouerSon() {
                 const lon = position.coords.longitude;
                 const date = new Date().toLocaleString("fr-FR");
 
-                await set(ref(db, "position"), { lat, lon, date, nom });
+                await set(ref(db, `positions/${voiture}`), { lat, lon, date, nom });
 
-
-                status.textContent = "Position enregistrée et partagée.";
+                statusEl.textContent = "Position enregistrée et partagée.";
                 jouerSon();
                 btn.disabled = false;
             },
@@ -228,33 +333,34 @@ function jouerSon() {
                     2: "Position indisponible.",
                     3: "Délai dépassé, réessayez."
                 };
-                status.textContent = messages[erreur.code] || "Erreur inconnue.";
+                statusEl.textContent = messages[erreur.code] || "Erreur inconnue.";
                 btn.disabled = false;
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
-    window.consulterPosition = async function() {
-        const status = document.getElementById("status");
-        const resultat = document.getElementById("resultat");
+    window.consulterPosition = async function(voiture) {
+        const { status, resultat } = ids[voiture];
+        const statusEl  = document.getElementById(status);
+        const resultatEl = document.getElementById(resultat);
 
-        status.textContent = "Chargement...";
-        const snapshot = await get(ref(db, "position"));
+        statusEl.textContent = "Chargement...";
+        const snapshot = await get(ref(db, `positions/${voiture}`));
 
         if (!snapshot.exists()) {
-            status.textContent = "Aucune position enregistrée pour l'instant.";
-            resultat.style.display = "none";
+            statusEl.textContent = "Aucune position enregistrée pour l'instant.";
+            resultatEl.style.display = "none";
             return;
         }
 
         const { lat, lon, date, nom } = snapshot.val();
         const lienMaps = `https://maps.google.com/?q=${lat},${lon}`;
 
-        status.textContent = "";
-        resultat.style.display = "block";
-        resultat.innerHTML = `
-            <strong>Dernière position enregistrée</strong><br><br>
+        statusEl.textContent = "";
+        resultatEl.style.display = "block";
+        resultatEl.innerHTML = `
+            <strong>Dernière position — ${labels[voiture]}</strong><br><br>
             👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
             📅 <strong>Date :</strong> ${date}<br>
             🌐 <strong>Latitude :</strong> ${lat.toFixed(6)}<br>
