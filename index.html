@@ -175,7 +175,22 @@ const firebaseConfig = {
     });
 
     // --- Géolocalisation ---
+function jouerSon() {
+    const contexte = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillateur = contexte.createOscillator();
+    const gain = contexte.createGain();
 
+    oscillateur.connect(gain);
+    gain.connect(contexte.destination);
+
+    oscillateur.type = "sine";
+    oscillateur.frequency.setValueAtTime(880, contexte.currentTime);
+    gain.gain.setValueAtTime(0.3, contexte.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, contexte.currentTime + 0.6);
+
+    oscillateur.start(contexte.currentTime);
+    oscillateur.stop(contexte.currentTime + 0.6);
+}
     window.sauvegarderPosition = function() {
         const btn = document.getElementById("btnSauvegarder");
         const status = document.getElementById("status");
@@ -202,7 +217,9 @@ const firebaseConfig = {
 
                 await set(ref(db, "position"), { lat, lon, date, nom });
 
+
                 status.textContent = "Position enregistrée et partagée.";
+                jouerSon();
                 btn.disabled = false;
             },
             (erreur) => {
