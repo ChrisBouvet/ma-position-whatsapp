@@ -371,9 +371,7 @@ const firebaseConfig = {
         resultatEl.innerHTML = `
             <strong>Dernière position — ${labels[voiture]}</strong><br><br>
             👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
-            📅 <strong>Date :</strong> ${date}<br>
-            🌐 <strong>Latitude :</strong> ${lat.toFixed(6)}<br>
-            🌐 <strong>Longitude :</strong> ${lon.toFixed(6)}<br><br>
+            📅 <strong>Date :</strong> ${date}<br><br>
             <a href="${lienMaps}" target="_blank">📍 Voir sur Google Maps</a>
         `;
     };
