@@ -1,250 +1,263 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma position</title>
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#4285F4">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px 0;
-            font-family: sans-serif;
-            background: #f0f0f0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            padding: 24px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-            max-width: 380px;
-            width: 100%;
-        }
-        h2 { margin: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma position</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4285F4">
+<style>
+* { box-sizing: border-box; }
+body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px 0;
+  font-family: sans-serif;
+  background: #f0f0f0;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  max-width: 380px;
+  width: 100%;
+}
+h2 { margin: 0; }
+.selecteur {
+  display: flex;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #ddd;
+}
+.selecteur button {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  background: #f0f0f0;
+  color: #888;
+  border-radius: 0;
+}
+.selecteur button.actif { background: #4285F4; color: white; }
+.carte-voiture {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 10px;
+}
+.carte-voiture.volkswagen { background: #e8f0fe; }
+.carte-voiture.peugeot { background: #fce8e8; }
+.carte-voiture h3 { margin: 0 0 4px 0; font-size: 16px; }
+.carte-voiture button {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-enregistrer { background: #4285F4; color: white; }
+.btn-consulter { background: #34A853; color: white; }
+.btn-plein { background: #FF6D00; color: white; }
+.btn-historique { background: #7B1FA2; color: white; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+.status { font-size: 13px; color: #888; text-align: center; min-height: 18px; }
+.resultat {
+  display: none;
+  background: white;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.resultat a { color: #4285F4; }
+#btnChangerNom {
+  background: #f0f0f0;
+  color: #555;
+  font-size: 13px;
+  padding: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#nomAffiche { font-size: 13px; color: #999; }
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  padding: 20px;
+}
+.overlay.cache { display: none; }
+.carte-modal {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.carte-modal h3 { margin: 0; }
+.carte-modal input[type="number"] {
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+}
+.carte-modal label { font-size: 13px; color: #555; font-weight: bold; }
+.btn-confirmer {
+  padding: 12px;
+  background: #FF6D00;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-annuler {
+  padding: 10px;
+  background: #f0f0f0;
+  color: #555;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.entree-historique {
+  background: #f8f8f8;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  border-left: 4px solid #FF6D00;
+  margin-bottom: 10px;
+}
 
-        .selecteur {
-            display: flex;
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid #ddd;
-        }
-        .selecteur button {
-            flex: 1;
-            padding: 10px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            background: #f0f0f0;
-            color: #888;
-            border-radius: 0;
-        }
-        .selecteur button.actif { background: #4285F4; color: white; }
-
-        .carte-voiture {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 16px;
-            border-radius: 10px;
-        }
-        .carte-voiture.volkswagen { background: #e8f0fe; }
-        .carte-voiture.peugeot    { background: #fce8e8; }
-        .carte-voiture h3 { margin: 0 0 4px 0; font-size: 16px; }
-
-        .carte-voiture button {
-            width: 100%;
-            padding: 12px;
-            font-size: 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-enregistrer { background: #4285F4; color: white; }
-        .btn-consulter   { background: #34A853; color: white; }
-        .btn-plein       { background: #FF6D00; color: white; }
-        .btn-historique  { background: #7B1FA2; color: white; }
-        button:disabled  { opacity: 0.6; cursor: not-allowed; }
-
-        .status { font-size: 13px; color: #888; text-align: center; min-height: 18px; }
-        .resultat {
-            display: none;
-            background: white;
-            border-radius: 8px;
-            padding: 14px;
-            font-size: 13px;
-            line-height: 1.8;
-        }
-        .resultat a { color: #4285F4; }
-
-        #btnChangerNom {
-            background: #f0f0f0;
-            color: #555;
-            font-size: 13px;
-            padding: 8px;
-            width: 100%;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        #nomAffiche { font-size: 13px; color: #999; }
-
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 20px;
-        }
-        .overlay.cache { display: none; }
-        .carte-modal {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 340px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .carte-modal h3 { margin: 0; }
-        .carte-modal input[type="number"] {
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            width: 100%;
-        }
-        .carte-modal label { font-size: 13px; color: #555; font-weight: bold; }
-        .btn-confirmer {
-            padding: 12px;
-            background: #FF6D00;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn-annuler {
-            padding: 10px;
-            background: #f0f0f0;
-            color: #555;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .entree-historique {
-            background: #f8f8f8;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 13px;
-            line-height: 1.7;
-            border-left: 4px solid #FF6D00;
-            margin-bottom: 10px;
-        }
-    </style>
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: bold;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transition: bottom 0.4s ease;
+  z-index: 100;
+  white-space: nowrap;
+}
+.toast.visible { bottom: 32px; }
+</style>
 </head>
 <body>
 
 <!-- Overlay nom -->
 <div id="overlayNom" class="overlay">
-    <div class="carte-modal">
-        <h3>Bienvenue 👋</h3>
-        <p style="margin:0; font-size:14px; color:#666">Quel est votre prénom ? Il sera enregistré sur cet appareil.</p>
-        <input type="text" id="inputNom" placeholder="Votre prénom" maxlength="30"
-               style="padding:10px; font-size:15px; border:1px solid #ddd; border-radius:6px;" />
-        <button class="btn-confirmer" style="background:#4285F4" onclick="enregistrerNom()">Confirmer</button>
-    </div>
+  <div class="carte-modal">
+    <h3>Bienvenue 👋</h3>
+    <p style="margin:0; font-size:14px; color:#666">Quel est votre prénom ? Il sera enregistré sur cet appareil.</p>
+    <input type="text" id="inputNom" placeholder="Votre prénom" maxlength="30"
+      style="padding:10px; font-size:15px; border:1px solid #ddd; border-radius:6px;" />
+    <button class="btn-confirmer" style="background:#4285F4" onclick="enregistrerNom()">Confirmer</button>
+  </div>
 </div>
 
 <!-- Overlay saisie plein -->
 <div id="overlayPlein" class="overlay cache">
-    <div class="carte-modal">
-        <h3>⛽ Nouveau plein</h3>
-        <label>Litres (optionnel)</label>
-        <input type="number" id="inputLitres" placeholder="ex: 45.5" step="0.1" min="0" />
-        <label>Montant € (optionnel)</label>
-        <input type="number" id="inputMontant" placeholder="ex: 72.30" step="0.01" min="0" />
-        <button class="btn-confirmer" id="btnConfirmerPlein" onclick="confirmerPlein()">Enregistrer le plein</button>
-        <button class="btn-annuler" onclick="fermerOverlayPlein()">Annuler</button>
-    </div>
+  <div class="carte-modal">
+    <h3>⛽ Nouveau plein</h3>
+    <label>Litres (optionnel)</label>
+    <input type="number" id="inputLitres" placeholder="ex: 45.5" step="0.1" min="0" />
+    <label>Montant € (optionnel)</label>
+    <input type="number" id="inputMontant" placeholder="ex: 72.30" step="0.01" min="0" />
+    <button class="btn-confirmer" id="btnConfirmerPlein" onclick="confirmerPlein()">Enregistrer le plein</button>
+    <button class="btn-annuler" onclick="fermerOverlayPlein()">Annuler</button>
+  </div>
 </div>
 
 <div class="container">
-    <h2>🚗 Mes voitures</h2>
-    <span id="nomAffiche"></span>
+  <h2>🚗 Mes voitures</h2>
+  <span id="nomAffiche"></span>
+  <div class="selecteur">
+    <button id="tabVolkswagen" onclick="afficherVoiture('volkswagen')">🚙 Volkswagen</button>
+    <button id="tabPeugeot" onclick="afficherVoiture('peugeot')">🚗 Peugeot</button>
+  </div>
 
-    <div class="selecteur">
-        <button id="tabVolkswagen" onclick="afficherVoiture('volkswagen')">🚙 Volkswagen</button>
-        <button id="tabPeugeot" onclick="afficherVoiture('peugeot')">🚗 Peugeot</button>
-    </div>
+  <!-- Carte Volkswagen -->
+  <div id="carteVolkswagen" class="carte-voiture volkswagen">
+    <h3>🚙 Volkswagen</h3>
+    <button class="btn-enregistrer" id="btnEnrVW" onclick="sauvegarderPosition('volkswagen')">
+      📍 Enregistrer ma position actuelle
+    </button>
+    <button class="btn-consulter" onclick="consulterPosition('volkswagen')">
+      🔍 Consulter la dernière position
+    </button>
+    <button class="btn-plein" onclick="ouvrirOverlayPlein('volkswagen')">
+      ⛽ Plein fait
+    </button>
+    <button class="btn-historique" onclick="consulterHistoriquePlein('volkswagen')">
+      📋 Historique des pleins
+    </button>
+    <div class="status" id="statusVW"></div>
+    <div class="resultat" id="resultatVW"></div>
+  </div>
 
-    <!-- Carte Volkswagen -->
-    <div id="carteVolkswagen" class="carte-voiture volkswagen">
-        <h3>🚙 Volkswagen</h3>
-        <button class="btn-enregistrer" id="btnEnrVW" onclick="sauvegarderPosition('volkswagen')">
-            📍 Enregistrer ma position actuelle
-        </button>
-        <button class="btn-consulter" onclick="consulterPosition('volkswagen')">
-            🔍 Consulter la dernière position
-        </button>
-        <button class="btn-plein" onclick="ouvrirOverlayPlein('volkswagen')">
-            ⛽ Plein fait
-        </button>
-        <button class="btn-historique" onclick="consulterHistoriquePlein('volkswagen')">
-            📋 Historique des pleins
-        </button>
-        <div class="status" id="statusVW"></div>
-        <div class="resultat" id="resultatVW"></div>
-    </div>
+  <!-- Carte Peugeot -->
+  <div id="cartePeugeot" class="carte-voiture peugeot">
+    <h3>🚗 Peugeot</h3>
+    <button class="btn-enregistrer" id="btnEnrPG" onclick="sauvegarderPosition('peugeot')">
+      📍 Enregistrer ma position actuelle
+    </button>
+    <button class="btn-consulter" onclick="consulterPosition('peugeot')">
+      🔍 Consulter la dernière position
+    </button>
+    <button class="btn-plein" onclick="ouvrirOverlayPlein('peugeot')">
+      ⛽ Plein fait
+    </button>
+    <button class="btn-historique" onclick="consulterHistoriquePlein('peugeot')">
+      📋 Historique des pleins
+    </button>
+    <div class="status" id="statusPG"></div>
+    <div class="resultat" id="resultatPG"></div>
+  </div>
 
-    <!-- Carte Peugeot -->
-    <div id="cartePeugeot" class="carte-voiture peugeot">
-        <h3>🚗 Peugeot</h3>
-        <button class="btn-enregistrer" id="btnEnrPG" onclick="sauvegarderPosition('peugeot')">
-            📍 Enregistrer ma position actuelle
-        </button>
-        <button class="btn-consulter" onclick="consulterPosition('peugeot')">
-            🔍 Consulter la dernière position
-        </button>
-        <button class="btn-plein" onclick="ouvrirOverlayPlein('peugeot')">
-            ⛽ Plein fait
-        </button>
-        <button class="btn-historique" onclick="consulterHistoriquePlein('peugeot')">
-            📋 Historique des pleins
-        </button>
-        <div class="status" id="statusPG"></div>
-        <div class="resultat" id="resultatPG"></div>
-    </div>
-
-    <button id="btnChangerNom" onclick="demanderNom()">✏️ Changer mon prénom</button>
+  <button id="btnChangerNom" onclick="demanderNom()">✏️ Changer mon prénom</button>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, query, orderByChild }
-        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!-- Toast -->
+<div id="toast" class="toast"></div>
 
-    // ⚠️ Remplace ces valeurs par celles de ton projet Firebase
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, push, query, orderByChild }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyA4CDOrkJbva99pu1rXYx6y_ccWfv3LJWE",
   authDomain: "positionvoiture.firebaseapp.com",
@@ -255,207 +268,196 @@ const firebaseConfig = {
   appId: "1:337751490430:web:39046710776f6d1a64bd2f"
 };
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-    // --- Son ---
-    function jouerSon() {
-        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-        const osc  = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(880, ctx.currentTime);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.6);
-    }
+// --- Son ---
+function jouerSon() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(880, ctx.currentTime);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.6);
+}
 
-    // --- Nom ---
-    function getNom() { return localStorage.getItem("monPrenom"); }
+// --- Toast ---
+function afficherToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("visible");
+  setTimeout(() => toast.classList.remove("visible"), 3000);
+}
 
-    function afficherNom() {
-        const nom = getNom();
-        document.getElementById("nomAffiche").textContent = nom ? `Connecté en tant que : ${nom}` : "";
-    }
+// --- Nom ---
+function getNom() { return localStorage.getItem("monPrenom"); }
+function afficherNom() {
+  const nom = getNom();
+  document.getElementById("nomAffiche").textContent = nom ? `Connecté en tant que : ${nom}` : "";
+}
 
-    window.enregistrerNom = function() {
-        const val = document.getElementById("inputNom").value.trim();
-        if (!val) return;
-        localStorage.setItem("monPrenom", val);
-        document.getElementById("overlayNom").classList.add("cache");
-        afficherNom();
-    };
+window.enregistrerNom = function() {
+  const val = document.getElementById("inputNom").value.trim();
+  if (!val) return;
+  localStorage.setItem("monPrenom", val);
+  document.getElementById("overlayNom").classList.add("cache");
+  afficherNom();
+};
 
-    window.demanderNom = function() {
-        document.getElementById("inputNom").value = getNom() || "";
-        document.getElementById("overlayNom").classList.remove("cache");
-    };
+window.demanderNom = function() {
+  document.getElementById("inputNom").value = getNom() || "";
+  document.getElementById("overlayNom").classList.remove("cache");
+};
 
-    document.getElementById("inputNom").addEventListener("keydown", e => {
-        if (e.key === "Enter") window.enregistrerNom();
-    });
+document.getElementById("inputNom").addEventListener("keydown", e => {
+  if (e.key === "Enter") window.enregistrerNom();
+});
 
-    if (!getNom()) {
-        document.getElementById("overlayNom").classList.remove("cache");
-    } else {
-        document.getElementById("overlayNom").classList.add("cache");
-        afficherNom();
-    }
+if (!getNom()) {
+  document.getElementById("overlayNom").classList.remove("cache");
+} else {
+  document.getElementById("overlayNom").classList.add("cache");
+  afficherNom();
+}
 
-    // --- Sélecteur voiture ---
-    window.afficherVoiture = function(voiture) {
-        document.getElementById("carteVolkswagen").style.display = voiture === "volkswagen" ? "flex" : "none";
-        document.getElementById("cartePeugeot").style.display    = voiture === "peugeot"    ? "flex" : "none";
-        document.getElementById("tabVolkswagen").classList.toggle("actif", voiture === "volkswagen");
-        document.getElementById("tabPeugeot").classList.toggle("actif",    voiture === "peugeot");
-    };
-    afficherVoiture("volkswagen");
+// --- Sélecteur voiture ---
+window.afficherVoiture = function(voiture) {
+  document.getElementById("carteVolkswagen").style.display = voiture === "volkswagen" ? "flex" : "none";
+  document.getElementById("cartePeugeot").style.display = voiture === "peugeot" ? "flex" : "none";
+  document.getElementById("tabVolkswagen").classList.toggle("actif", voiture === "volkswagen");
+  document.getElementById("tabPeugeot").classList.toggle("actif", voiture === "peugeot");
+};
+afficherVoiture("volkswagen");
 
-    const ids    = {
-        volkswagen: { enr: "btnEnrVW", status: "statusVW", resultat: "resultatVW" },
-        peugeot:    { enr: "btnEnrPG", status: "statusPG", resultat: "resultatPG" }
-    };
-    const labels = { volkswagen: "Volkswagen", peugeot: "Peugeot" };
+const ids = {
+  volkswagen: { enr: "btnEnrVW", status: "statusVW", resultat: "resultatVW" },
+  peugeot:    { enr: "btnEnrPG", status: "statusPG", resultat: "resultatPG" }
+};
+const labels = { volkswagen: "Volkswagen", peugeot: "Peugeot" };
 
-    // --- Position ---
-    window.sauvegarderPosition = function(voiture) {
-        const btn      = document.getElementById(ids[voiture].enr);
-        const statusEl = document.getElementById(ids[voiture].status);
-        const nom      = getNom();
+// --- Position ---
+window.sauvegarderPosition = function(voiture) {
+  const btn = document.getElementById(ids[voiture].enr);
+  const statusEl = document.getElementById(ids[voiture].status);
+  const nom = getNom();
+  if (!nom) { window.demanderNom(); return; }
+  if (!navigator.geolocation) { statusEl.textContent = "Géolocalisation non supportée."; return; }
+  btn.disabled = true;
+  statusEl.textContent = "Récupération de la position...";
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const date = new Date().toLocaleString("fr-FR");
+      await set(ref(db, `positions/${voiture}`), { lat, lon, date, nom });
+      statusEl.textContent = "";
+      jouerSon();
+      afficherToast("📍 Position enregistrée ✅");
+      btn.disabled = false;
+    },
+    (erreur) => {
+      const msgs = { 1: "Permission refusée.", 2: "Position indisponible.", 3: "Délai dépassé." };
+      statusEl.textContent = msgs[erreur.code] || "Erreur inconnue.";
+      btn.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+};
 
-        if (!nom) { window.demanderNom(); return; }
-        if (!navigator.geolocation) { statusEl.textContent = "Géolocalisation non supportée."; return; }
+window.consulterPosition = async function(voiture) {
+  const statusEl = document.getElementById(ids[voiture].status);
+  const resultatEl = document.getElementById(ids[voiture].resultat);
+  statusEl.textContent = "Chargement...";
+  const snapshot = await get(ref(db, `positions/${voiture}`));
+  if (!snapshot.exists()) {
+    statusEl.textContent = "Aucune position enregistrée.";
+    resultatEl.style.display = "none";
+    return;
+  }
+  const { lat, lon, date, nom } = snapshot.val();
+  const lienMaps = `https://maps.google.com/?q=${lat},${lon}`;
+  statusEl.textContent = "";
+  resultatEl.style.display = "block";
+  resultatEl.innerHTML = `
+    <strong>Dernière position — ${labels[voiture]}</strong><br><br>
+    👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
+    📅 <strong>Date :</strong> ${date}<br><br>
+    <a href="${lienMaps}" target="_blank">📍 Voir sur Google Maps</a>
+  `;
+};
 
-        btn.disabled = true;
-        statusEl.textContent = "Récupération de la position...";
+// --- Pleins ---
+let voiturePleinEnCours = null;
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat  = position.coords.latitude;
-                const lon  = position.coords.longitude;
-                const date = new Date().toLocaleString("fr-FR");
-                await set(ref(db, `positions/${voiture}`), { lat, lon, date, nom });
-                statusEl.textContent = "Position enregistrée et partagée.";
-                jouerSon();
-                btn.disabled = false;
-            },
-            (erreur) => {
-                const msgs = { 1: "Permission refusée.", 2: "Position indisponible.", 3: "Délai dépassé." };
-                statusEl.textContent = msgs[erreur.code] || "Erreur inconnue.";
-                btn.disabled = false;
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    };
+window.ouvrirOverlayPlein = function(voiture) {
+  if (!getNom()) { window.demanderNom(); return; }
+  voiturePleinEnCours = voiture;
+  document.getElementById("inputLitres").value = "";
+  document.getElementById("inputMontant").value = "";
+  document.getElementById("overlayPlein").classList.remove("cache");
+};
 
-    window.consulterPosition = async function(voiture) {
-        const statusEl   = document.getElementById(ids[voiture].status);
-        const resultatEl = document.getElementById(ids[voiture].resultat);
+window.fermerOverlayPlein = function() {
+  document.getElementById("overlayPlein").classList.add("cache");
+  voiturePleinEnCours = null;
+};
 
-        statusEl.textContent = "Chargement...";
-        const snapshot = await get(ref(db, `positions/${voiture}`));
+window.confirmerPlein = async function() {
+  const voiture = voiturePleinEnCours;
+  const nom = getNom();
+  const litres = document.getElementById("inputLitres").value.trim();
+  const montant = document.getElementById("inputMontant").value.trim();
+  const btn = document.getElementById("btnConfirmerPlein");
+  const statusEl = document.getElementById(ids[voiture].status);
+  btn.disabled = true;
+  btn.textContent = "Enregistrement...";
+  const date = new Date().toLocaleString("fr-FR");
+  const timestamp = Date.now();
+  const entree = {
+    nom,
+    date,
+    timestamp: -timestamp,
+    ...(litres && { litres: parseFloat(litres) }),
+    ...(montant && { montant: parseFloat(montant) })
+  };
+  await push(ref(db, `pleins/${voiture}`), entree);
+  fermerOverlayPlein();
+  statusEl.textContent = "Plein enregistré ✅";
+  jouerSon();
+  btn.disabled = false;
+  btn.textContent = "Enregistrer le plein";
+};
 
-        if (!snapshot.exists()) {
-            statusEl.textContent = "Aucune position enregistrée.";
-            resultatEl.style.display = "none";
-            return;
-        }
-
-        const { lat, lon, date, nom } = snapshot.val();
-        const lienMaps = `https://maps.google.com/?q=${lat},${lon}`;
-        statusEl.textContent = "";
-        resultatEl.style.display = "block";
-        resultatEl.innerHTML = `
-            <strong>Dernière position — ${labels[voiture]}</strong><br><br>
-            👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
-            📅 <strong>Date :</strong> ${date}<br><br>
-            <a href="${lienMaps}" target="_blank">📍 Voir sur Google Maps</a>
-        `;
-    };
-
-    // --- Pleins ---
-    let voiturePleinEnCours = null;
-
-    window.ouvrirOverlayPlein = function(voiture) {
-        if (!getNom()) { window.demanderNom(); return; }
-        voiturePleinEnCours = voiture;
-        document.getElementById("inputLitres").value  = "";
-        document.getElementById("inputMontant").value = "";
-        document.getElementById("overlayPlein").classList.remove("cache");
-    };
-
-    window.fermerOverlayPlein = function() {
-        document.getElementById("overlayPlein").classList.add("cache");
-        voiturePleinEnCours = null;
-    };
-
-    window.confirmerPlein = async function() {
-        const voiture  = voiturePleinEnCours;
-        const nom      = getNom();
-        const litres   = document.getElementById("inputLitres").value.trim();
-        const montant  = document.getElementById("inputMontant").value.trim();
-        const btn      = document.getElementById("btnConfirmerPlein");
-        const statusEl = document.getElementById(ids[voiture].status);
-
-        btn.disabled = true;
-        btn.textContent = "Enregistrement...";
-
-        const date      = new Date().toLocaleString("fr-FR");
-        const timestamp = Date.now();
-
-        const entree = {
-            nom,
-            date,
-            timestamp: -timestamp, // valeur négative pour tri décroissant
-            ...(litres  && { litres:  parseFloat(litres) }),
-            ...(montant && { montant: parseFloat(montant) })
-        };
-
-        await push(ref(db, `pleins/${voiture}`), entree);
-
-        fermerOverlayPlein();
-        statusEl.textContent = "Plein enregistré ✅";
-        jouerSon();
-        btn.disabled = false;
-        btn.textContent = "Enregistrer le plein";
-    };
-
-    window.consulterHistoriquePlein = async function(voiture) {
-        const statusEl   = document.getElementById(ids[voiture].status);
-        const resultatEl = document.getElementById(ids[voiture].resultat);
-
-        statusEl.textContent = "Chargement de l'historique...";
-        resultatEl.style.display = "none";
-
-        const snapshot = await get(query(ref(db, `pleins/${voiture}`), orderByChild("timestamp")));
-
-        if (!snapshot.exists()) {
-            statusEl.textContent = "Aucun plein enregistré.";
-            return;
-        }
-
-        const entrees = [];
-        snapshot.forEach(child => entrees.push(child.val()));
-
-        statusEl.textContent = "";
-        resultatEl.style.display = "block";
-
-        let html = `<strong>Historique des pleins — ${labels[voiture]}</strong><br><br>`;
-
-        entrees.forEach(e => {
-            html += `<div class="entree-historique">`;
-            html += `📅 <strong>${e.date}</strong><br>`;
-            html += `👤 <strong>Par :</strong> ${e.nom || "Inconnu"}<br>`;
-            if (e.litres  !== undefined) html += `⛽ <strong>Litres :</strong> ${e.litres} L<br>`;
-            if (e.montant !== undefined) html += `💶 <strong>Montant :</strong> ${e.montant.toFixed(2)} €<br>`;
-            html += `</div>`;
-        });
-
-        resultatEl.innerHTML = html;
-    };
+window.consulterHistoriquePlein = async function(voiture) {
+  const statusEl = document.getElementById(ids[voiture].status);
+  const resultatEl = document.getElementById(ids[voiture].resultat);
+  statusEl.textContent = "Chargement de l'historique...";
+  resultatEl.style.display = "none";
+  const snapshot = await get(query(ref(db, `pleins/${voiture}`), orderByChild("timestamp")));
+  if (!snapshot.exists()) {
+    statusEl.textContent = "Aucun plein enregistré.";
+    return;
+  }
+  const entrees = [];
+  snapshot.forEach(child => entrees.push(child.val()));
+  statusEl.textContent = "";
+  resultatEl.style.display = "block";
+  let html = `<strong>Historique des pleins — ${labels[voiture]}</strong><br><br>`;
+  entrees.forEach(e => {
+    html += `<div class="entree-historique">`;
+    html += `📅 <strong>${e.date}</strong><br>`;
+    html += `👤 <strong>Par :</strong> ${e.nom || "Inconnu"}<br>`;
+    if (e.litres !== undefined) html += `⛽ <strong>Litres :</strong> ${e.litres} L<br>`;
+    if (e.montant !== undefined) html += `💶 <strong>Montant :</strong> ${e.montant.toFixed(2)} €<br>`;
+    html += `</div>`;
+  });
+  resultatEl.innerHTML = html;
+};
 </script>
 </body>
 </html>
