@@ -6,6 +6,10 @@
 <title>Ma position</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#4285F4">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 * { box-sizing: border-box; }
 body {
@@ -71,6 +75,7 @@ h2 { margin: 0; }
   font-weight: bold;
 }
 .btn-enregistrer { background: #4285F4; color: white; }
+.btn-manuelle { background: white; color: #4285F4; border: 2px solid #4285F4 !important; }
 .btn-consulter { background: #34A853; color: white; }
 .btn-plein { background: #FF6D00; color: white; }
 .btn-historique { background: #7B1FA2; color: white; }
@@ -155,6 +160,65 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   margin-bottom: 10px;
 }
 
+/* Saisie manuelle sur carte */
+#overlayCarte { padding: 12px; z-index: 20; }
+.modal-carte {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  height: 100%;
+  max-height: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+.modal-carte h3 { margin: 0; font-size: 16px; }
+.aide-carte { margin: 0; font-size: 13px; color: #666; }
+.recherche-adresse { display: flex; gap: 6px; }
+.recherche-adresse input {
+  flex: 1;
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-width: 0;
+}
+.recherche-adresse button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #4285F4;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+#mapSaisie {
+  flex: 1;
+  min-height: 220px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+.ligne-date { display: flex; flex-direction: column; gap: 4px; }
+.ligne-date label { font-size: 13px; color: #555; font-weight: bold; }
+.ligne-date input {
+  padding: 9px;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+}
+#statusCarte { font-size: 13px; color: #888; min-height: 16px; text-align: center; }
+.badge-manuelle {
+  display: inline-block;
+  background: #fff4e5;
+  color: #b25e00;
+  border-radius: 10px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
 /* Toast */
 .toast {
   position: fixed;
@@ -201,6 +265,28 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   </div>
 </div>
 
+<!-- Overlay saisie manuelle de la position sur carte -->
+<div id="overlayCarte" class="overlay cache">
+  <div class="modal-carte">
+    <h3 id="titreCarte">🗺️ Où est garée la voiture ?</h3>
+    <p class="aide-carte">Touchez la carte pour placer la voiture, puis déplacez le repère si besoin.</p>
+    <form class="recherche-adresse" onsubmit="rechercherAdresse(event)">
+      <input type="search" id="inputAdresse" placeholder="Rechercher une adresse…" />
+      <button type="submit">🔍</button>
+    </form>
+    <div id="mapSaisie"></div>
+    <div class="ligne-date">
+      <label for="inputDateParking">Garée le</label>
+      <input type="datetime-local" id="inputDateParking" />
+    </div>
+    <div id="statusCarte"></div>
+    <button class="btn-confirmer" id="btnConfirmerCarte" style="background:#4285F4" onclick="confirmerPositionManuelle()" disabled>
+      📍 Enregistrer cette position
+    </button>
+    <button class="btn-annuler" onclick="fermerOverlayCarte()">Annuler</button>
+  </div>
+</div>
+
 <div class="container">
   <h2>🚗 Mes voitures</h2>
   <span id="nomAffiche"></span>
@@ -214,6 +300,9 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
     <h3>🚙 Volkswagen</h3>
     <button class="btn-enregistrer" id="btnEnrVW" onclick="sauvegarderPosition('volkswagen')">
       📍 Enregistrer ma position actuelle
+    </button>
+    <button class="btn-manuelle" onclick="ouvrirOverlayCarte('volkswagen')">
+      🗺️ Indiquer la position sur une carte
     </button>
     <button class="btn-consulter" onclick="consulterPosition('volkswagen')">
       🔍 Consulter la dernière position
@@ -233,6 +322,9 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
     <h3>🚗 Peugeot</h3>
     <button class="btn-enregistrer" id="btnEnrPG" onclick="sauvegarderPosition('peugeot')">
       📍 Enregistrer ma position actuelle
+    </button>
+    <button class="btn-manuelle" onclick="ouvrirOverlayCarte('peugeot')">
+      🗺️ Indiquer la position sur une carte
     </button>
     <button class="btn-consulter" onclick="consulterPosition('peugeot')">
       🔍 Consulter la dernière position
@@ -379,16 +471,143 @@ window.consulterPosition = async function(voiture) {
     resultatEl.style.display = "none";
     return;
   }
-  const { lat, lon, date, nom } = snapshot.val();
+  const { lat, lon, date, nom, manuelle, dateSaisie } = snapshot.val();
   const lienMaps = `https://maps.google.com/?q=${lat},${lon}`;
   statusEl.textContent = "";
   resultatEl.style.display = "block";
   resultatEl.innerHTML = `
     <strong>Dernière position — ${labels[voiture]}</strong><br><br>
     👤 <strong>Par :</strong> ${nom || "Inconnu"}<br>
-    📅 <strong>Date :</strong> ${date}<br><br>
+    📅 <strong>Date :</strong> ${date}
+    ${manuelle ? `<br><span class="badge-manuelle">🗺️ Placée à la main sur la carte${dateSaisie ? ` le ${dateSaisie}` : ""}</span>` : ""}
+    <br><br>
     <a href="${lienMaps}" target="_blank">📍 Voir sur Google Maps</a>
   `;
+};
+
+// --- Saisie manuelle de la position sur carte ---
+const CENTRE_PAR_DEFAUT = [46.6, 2.4]; // France
+let voitureCarteEnCours = null;
+let carteSaisie = null;
+let repere = null;
+
+function dateLocalePourInput(d) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function placerRepere(latlng) {
+  if (repere) {
+    repere.setLatLng(latlng);
+  } else {
+    repere = L.marker(latlng, { draggable: true }).addTo(carteSaisie);
+  }
+  document.getElementById("btnConfirmerCarte").disabled = false;
+  document.getElementById("statusCarte").textContent = "";
+}
+
+function initialiserCarte() {
+  if (carteSaisie) return;
+  carteSaisie = L.map("mapSaisie").setView(CENTRE_PAR_DEFAUT, 5);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(carteSaisie);
+  carteSaisie.on("click", e => placerRepere(e.latlng));
+}
+
+window.ouvrirOverlayCarte = async function(voiture) {
+  if (!getNom()) { window.demanderNom(); return; }
+  voitureCarteEnCours = voiture;
+  document.getElementById("titreCarte").textContent = `🗺️ Où est garée la ${labels[voiture]} ?`;
+  document.getElementById("inputAdresse").value = "";
+  document.getElementById("inputDateParking").value = dateLocalePourInput(new Date());
+  document.getElementById("statusCarte").textContent = "";
+  document.getElementById("btnConfirmerCarte").disabled = true;
+  document.getElementById("overlayCarte").classList.remove("cache");
+
+  initialiserCarte();
+  if (repere) { carteSaisie.removeLayer(repere); repere = null; }
+  // La carte était cachée : il faut recalculer sa taille
+  setTimeout(() => carteSaisie.invalidateSize(), 50);
+
+  // Centrage : position actuelle du téléphone, sinon dernière position connue de la voiture
+  carteSaisie.setView(CENTRE_PAR_DEFAUT, 5);
+  try {
+    const snapshot = await get(ref(db, `positions/${voiture}`));
+    if (snapshot.exists() && voitureCarteEnCours === voiture) {
+      const { lat, lon } = snapshot.val();
+      carteSaisie.setView([lat, lon], 16);
+    }
+  } catch (e) { /* pas bloquant */ }
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        if (voitureCarteEnCours === voiture && !repere) {
+          carteSaisie.setView([pos.coords.latitude, pos.coords.longitude], 16);
+        }
+      },
+      () => {},
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+    );
+  }
+};
+
+window.fermerOverlayCarte = function() {
+  document.getElementById("overlayCarte").classList.add("cache");
+  voitureCarteEnCours = null;
+};
+
+window.rechercherAdresse = async function(event) {
+  event.preventDefault();
+  const texte = document.getElementById("inputAdresse").value.trim();
+  const statusEl = document.getElementById("statusCarte");
+  if (!texte) return;
+  statusEl.textContent = "Recherche…";
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=fr&accept-language=fr&q=${encodeURIComponent(texte)}`;
+    const resultats = await (await fetch(url)).json();
+    if (!resultats.length) {
+      statusEl.textContent = "Adresse introuvable.";
+      return;
+    }
+    const latlng = [parseFloat(resultats[0].lat), parseFloat(resultats[0].lon)];
+    carteSaisie.setView(latlng, 17);
+    placerRepere(latlng);
+    statusEl.textContent = "Ajustez le repère si besoin.";
+  } catch (e) {
+    statusEl.textContent = "Recherche impossible pour le moment.";
+  }
+};
+
+window.confirmerPositionManuelle = async function() {
+  const voiture = voitureCarteEnCours;
+  if (!voiture || !repere) return;
+  const nom = getNom();
+  const btn = document.getElementById("btnConfirmerCarte");
+  const { lat, lng } = repere.getLatLng();
+  const valeurDate = document.getElementById("inputDateParking").value;
+  const dateParking = valeurDate ? new Date(valeurDate) : new Date();
+  btn.disabled = true;
+  btn.textContent = "Enregistrement...";
+  try {
+    await set(ref(db, `positions/${voiture}`), {
+      lat,
+      lon: lng,
+      date: dateParking.toLocaleString("fr-FR"),
+      nom,
+      manuelle: true,
+      dateSaisie: new Date().toLocaleString("fr-FR")
+    });
+    fermerOverlayCarte();
+    jouerSon();
+    afficherToast("📍 Position enregistrée ✅");
+  } catch (e) {
+    document.getElementById("statusCarte").textContent = "Erreur lors de l'enregistrement.";
+  } finally {
+    btn.textContent = "📍 Enregistrer cette position";
+    btn.disabled = !repere;
+  }
 };
 
 // --- Pleins ---
